@@ -1,7 +1,7 @@
 import jetpack from 'fs-jetpack'
 import fs from 'fs'
 import buildCommand from './buildCommand.js'
-import formatOptionForYargs from '../../lib/formatOptionForYargs.js'
+import formatOptionForYargs from './formatOptionForYargs.js'
 
 const operation = async ({ path, generator, yargs, root = false, payload }) => {
   const candidates = await jetpack.listAsync(path)
