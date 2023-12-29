@@ -20,6 +20,8 @@ import _path from 'path';
 import getFileCallerURL from './lib/getFileCallerURL.js';
 import loadOptions from './loadOptions/index.js';
 
+import buildGenerator from './generator/index.js';
+
 
 export default async ({ path, npmPackage, config } = {}) => {
 
@@ -74,7 +76,16 @@ export default async ({ path, npmPackage, config } = {}) => {
     .epilog('Made by Servable.')
 
   const options = await loadOptions({ path: __actualPath, config: __actualConfig })
-  await registerCommands({ path: __actualPath, yargs, config: __actualConfig, options })
+  const payload = {}
+  const generator = buildGenerator({ payload, options, yargs })
+  await registerCommands({
+    path: __actualPath,
+    yargs,
+    config: __actualConfig,
+    options,
+    generator,
+    payload
+  })
 
 }
 

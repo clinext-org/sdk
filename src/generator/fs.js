@@ -1,6 +1,6 @@
 import jetpack from 'fs-jetpack'
 import fs from 'fs'
-import getFileCallerURL from '../../../lib/getFileCallerURL.js'
+import getFileCallerURL from '../lib/getFileCallerURL.js'
 import _path from 'path'
 
 export default ({ generator }) => {
