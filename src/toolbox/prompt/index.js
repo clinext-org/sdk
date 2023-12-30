@@ -21,6 +21,24 @@ export default ({ toolbox }) => {
           let fullQuestion = {
             ...question
           }
+
+          if (fullQuestion.conditions && fullQuestion.conditions.length) {
+            let meetsConditions = true
+            for (var i in fullQuestion.conditions) {
+              const condition = fullQuestion.conditions[i]
+              const { name, operator, operand } = condition
+              const targetValue = toolbox.payload[name]
+              // if (!operator && (targetValue === null || targetValue === undefined || !targetValue)) {
+              if (!operator && !targetValue) {
+                meetsConditions = false
+                break
+              }
+            }
+            if (!meetsConditions) {
+              return null
+            }
+          }
+
           const items = toolbox.options.filter(a => a.name === question.name)
           if (items && items.length) {
             fullQuestion = {
