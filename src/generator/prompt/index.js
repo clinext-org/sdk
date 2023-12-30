@@ -37,12 +37,11 @@ export default ({ generator }) => {
             promptModule = _promptModule(_f)
           }
 
-          if (fullQuestion.prompt
-            && fullQuestion.prompt.transformers
-            && fullQuestion.prompt.transformers.in
-            && fullQuestion.prompt.transformers.in.length) {
+          if (fullQuestion.transformers
+            && fullQuestion.transformers.in
+            && fullQuestion.transformers.in.length) {
             await Bluebird.Promise.mapSeries(
-              fullQuestion.prompt.transformers.in,
+              fullQuestion.transformers.in,
               async transformerRaw => {
                 const transformer = generator.asks.transformers.in[transformerRaw.id]
                 if (!transformer) {
@@ -93,12 +92,11 @@ export default ({ generator }) => {
           })
 
           let modified
-          if (fullQuestion.prompt
-            && fullQuestion.prompt.transformers
-            && fullQuestion.prompt.transformers.out
-            && fullQuestion.prompt.transformers.out.length) {
+          if (fullQuestion.transformers
+            && fullQuestion.transformers.out
+            && fullQuestion.transformers.out.length) {
             await Bluebird.Promise.mapSeries(
-              fullQuestion.prompt.transformers.out,
+              fullQuestion.transformers.out,
               async transformerRaw => {
                 const { template } = transformerRaw
                 if (template) {
