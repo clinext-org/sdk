@@ -1,7 +1,7 @@
 
 export default async ({
   path,
-  generator,
+  toolbox,
   payload,
   fileName }) => {
   const data = (await import(path)).default
@@ -16,7 +16,7 @@ export default async ({
     desc: description,
     builder: {},
     handler: (argv,) => {
-      data.handler({ generator, payload, argv })
+      data.handler({ toolbox, payload, argv })
     }
   }
 

@@ -1,7 +1,7 @@
 import directoryFilesRecursive from '../../lib/directoryFilesRecursive.js'
 
 export default async ({ path, config, }) => {
-  const optionsPath = `${path}/questions/options`
+  const optionsPath = `${path}/options`
   let files = await directoryFilesRecursive({
     path: optionsPath,
     includeMeta: false

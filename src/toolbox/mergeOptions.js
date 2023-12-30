@@ -2,9 +2,9 @@
 import _ from 'underscore'
 import lodash from 'lodash'
 
-export default ({ handlerOptions = [], generator }) => {
+export default ({ handlerOptions = [], toolbox }) => {
 
-  generator.options = handlerOptions.map(option => {
+  toolbox.options = handlerOptions.map(option => {
     switch (option.scope) {
       case 'private': {
         return option
@@ -12,7 +12,7 @@ export default ({ handlerOptions = [], generator }) => {
       default: break
     }
 
-    const i = _.findWhere(generator.libraryOptions,
+    const i = _.findWhere(toolbox.libraryOptions,
       { name: option.name })
 
     if (!i) {

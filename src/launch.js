@@ -23,7 +23,7 @@ import { dirname } from "path";
 import getFileCallerURL from './lib/getFileCallerURL.js';
 import loadOptions from './load/options/index.js';
 import loadValidators from './load/validators/index.js';
-import buildGenerator from './generator/index.js';
+import buildToolbox from './toolbox/index.js';
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -87,10 +87,10 @@ export default async ({ path, npmPackage, config } = {}) => {
 
   const transformers = {
     in: await loadTransformers({
-      path: `${__actualPath}/questions/transformers/in`,
+      path: `${__actualPath}/transformers/in`,
     }),
     out: await loadTransformers({
-      path: `${__actualPath}/questions/transformers/out`,
+      path: `${__actualPath}/transformers/out`,
     }),
   }
 
@@ -102,14 +102,14 @@ export default async ({ path, npmPackage, config } = {}) => {
   validators = {
     ...validators,
     ...(await loadValidators({
-      path: `${__actualPath}/questions/validators`,
+      path: `${__actualPath}/validators`,
       config: __actualConfig,
       options,
     }))
   }
 
   const payload = {}
-  const generator = buildGenerator({
+  const toolbox = buildToolbox({
     payload,
     options,
     yargs,
@@ -122,7 +122,7 @@ export default async ({ path, npmPackage, config } = {}) => {
     yargs,
     config: __actualConfig,
     options,
-    generator,
+    toolbox,
     payload
   })
 }

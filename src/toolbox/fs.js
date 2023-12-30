@@ -9,10 +9,10 @@ import Bluebird from "bluebird"
 import ensureDirectoryExists from '../lib/ensureDirectoryExists.js'
 
 
-export default ({ generator }) => {
+export default ({ toolbox }) => {
 
   return {
-    fractions: {
+    chunks: {
       copy: async ({
         source,
         destination,

@@ -3,7 +3,7 @@ import fs from 'fs'
 import buildCommand from './buildCommand.js'
 import formatOptionForYargs from './formatOptionForYargs.js'
 
-const operation = async ({ path, generator, yargs, root = false, payload }) => {
+const operation = async ({ path, toolbox, yargs, root = false, payload }) => {
   const candidates = await jetpack.listAsync(path)
   if (!candidates || !candidates.length) {
     return
@@ -21,7 +21,7 @@ const operation = async ({ path, generator, yargs, root = false, payload }) => {
       return null
     }
 
-    const subCommand = await operation({ path: __path, generator, payload, yargs })
+    const subCommand = await operation({ path: __path, toolbox, payload, yargs })
     subCommands.push(subCommand)
   }))
 
@@ -32,14 +32,14 @@ const operation = async ({ path, generator, yargs, root = false, payload }) => {
       return null
     }
 
-    const { data: commandData, command } = await buildCommand({ path: __path, generator, fileName: item, payload })
+    const { data: commandData, command } = await buildCommand({ path: __path, toolbox, fileName: item, payload })
 
     if (item === 'index.js') {
       return
     }
 
     command.builder = yargs => {
-      fixOptions({ generator, commandOptions: commandData.options, yargs })
+      fixOptions({ toolbox, commandOptions: commandData.options, yargs })
       if (commandData.example) {
         yargs.example(commandData.example)
       }
@@ -61,11 +61,11 @@ const operation = async ({ path, generator, yargs, root = false, payload }) => {
       return
     }
 
-    const { data: commandData, command } = await buildCommand({ path: __path, generator, fileName: item, payload })
+    const { data: commandData, command } = await buildCommand({ path: __path, toolbox, fileName: item, payload })
 
     if (!root) {
       command.builder = yargs => {
-        fixOptions({ generator, commandOptions: commandData.options, yargs })
+        fixOptions({ toolbox, commandOptions: commandData.options, yargs })
         // commandData.options.forEach(option => formatOptionForYargs({ option, yargs }))
         if (commandData.example) {
           yargs.example(commandData.example)
@@ -96,12 +96,12 @@ export default operation
 
 
 import parseArgv from 'tiny-parse-argv'
-const fixOptions = ({ generator, commandOptions, yargs }) => {
+const fixOptions = ({ toolbox, commandOptions, yargs }) => {
   let nativeArgv = parseArgv(process.argv)
   delete nativeArgv["--"]
   delete nativeArgv["_"]
   Object.keys(nativeArgv).forEach(n => {
-    generator.payload[n] = nativeArgv[n]
+    toolbox.payload[n] = nativeArgv[n]
   })
 
   const _options = (commandOptions && commandOptions.length)
@@ -114,6 +114,6 @@ const fixOptions = ({ generator, commandOptions, yargs }) => {
       value
     }
   })
-  generator.mergeOptions(options)
-  generator.options.forEach(option => formatOptionForYargs({ option, yargs }))
+  toolbox.mergeOptions(options)
+  toolbox.options.forEach(option => formatOptionForYargs({ option, yargs }))
 }

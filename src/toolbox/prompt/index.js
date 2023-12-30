@@ -9,7 +9,7 @@ import ejs from 'ejs'
 import chalk from 'chalk'
 
 
-export default ({ generator }) => {
+export default ({ toolbox }) => {
 
   const prompt = {
     ask: async (value) => {
@@ -21,7 +21,7 @@ export default ({ generator }) => {
           let fullQuestion = {
             ...question
           }
-          const items = generator.options.filter(a => a.name === question.name)
+          const items = toolbox.options.filter(a => a.name === question.name)
           if (items && items.length) {
             fullQuestion = {
               ...items[0],
@@ -43,14 +43,14 @@ export default ({ generator }) => {
             await Bluebird.Promise.mapSeries(
               fullQuestion.transformers.in,
               async transformerRaw => {
-                const transformer = generator.asks.transformers.in[transformerRaw.id]
+                const transformer = toolbox.asks.transformers.in[transformerRaw.id]
                 if (!transformer) {
                   return
                 }
                 fullQuestion = await transformer.handler({
                   question: fullQuestion,
-                  payload: generator.payload,
-                  generator,
+                  payload: toolbox.payload,
+                  toolbox,
                   promptModule,
                   promptType
                 })
@@ -60,7 +60,7 @@ export default ({ generator }) => {
           // let validators = []
           // let validatorsPayloads = fullQuestion.validators
           // if (validatorsPayloads && validatorsPayloads.length) {
-          //   const libraries = generator.asks.validators
+          //   const libraries = toolbox.asks.validators
 
           //   for (var i in validatorsPayloads) {
           //     const payload = validatorsPayloads[i]
@@ -84,11 +84,11 @@ export default ({ generator }) => {
 
           fullQuestion.value = await ask({
             question: fullQuestion,
-            payload: generator.payload,
-            generator,
+            payload: toolbox.payload,
+            toolbox,
             promptModule,
             promptType,
-            validatorsRunners: generator.asks.validators
+            validatorsRunners: toolbox.asks.validators
           })
 
           let modified
@@ -101,22 +101,22 @@ export default ({ generator }) => {
                 const { template } = transformerRaw
                 if (template) {
                   fullQuestion.value = ejs.render(template, {
-                    ...generator.payload,
+                    ...toolbox.payload,
                     value: fullQuestion.value,
                   })
                   modified = true
                   return
                 }
 
-                const transformer = generator.asks.transformers.out[transformerRaw.id]
+                const transformer = toolbox.asks.transformers.out[transformerRaw.id]
                 if (!transformer) {
                   return
                 }
                 fullQuestion.value = await transformer.handler({
                   value: fullQuestion.value,
                   question: fullQuestion,
-                  payload: generator.payload,
-                  generator,
+                  payload: toolbox.payload,
+                  toolbox,
                   promptModule,
                   promptType
                 })
@@ -125,9 +125,9 @@ export default ({ generator }) => {
           }
 
           if (modified) {
-            generator.print.log(`${chalk.green('✓')} ${chalk.italic.bold(fullQuestion.message ? fullQuestion.message : fullQuestion.name)} ${chalk.italic(fullQuestion.value)}`)
+            toolbox.print.log(`${chalk.green('✓')} ${chalk.italic.bold(fullQuestion.message ? fullQuestion.message : fullQuestion.name)} ${chalk.italic(fullQuestion.value)}`)
           }
-          generator.payload[fullQuestion.name] = fullQuestion.value
+          toolbox.payload[fullQuestion.name] = fullQuestion.value
           result[fullQuestion.name] = fullQuestion.value
           return fullQuestion.value
         })

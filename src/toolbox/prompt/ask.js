@@ -6,7 +6,7 @@ export default async (props) => {
   const {
     payload,
     question,
-    generator,
+    toolbox,
     promptModule,
     validatorsRunners = [],
     promptType } = props
@@ -28,19 +28,19 @@ export default async (props) => {
   }
   const valueIsDefined = !(value === null || value === undefined)
   if (valueIsDefined) {
-    generator.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(value)}`)
+    toolbox.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(value)}`)
     return value
   }
 
   const isQuick = payload['quick'] || payload['q']
   if (isQuick && valueIsDefined) {
-    generator.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(value)}`)
+    toolbox.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(value)}`)
     return value
   }
 
   if (isQuick && !(defaultValue === null || defaultValue === undefined)) {
     payload[name] = defaultValue
-    generator.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(payload[name])}`)
+    toolbox.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(payload[name])}`)
     return defaultValue
   }
 
@@ -82,7 +82,7 @@ export default async (props) => {
         errorMessage = "Validation failed"
       }
       if (!isValid) {
-        generator.print.log(`    ${chalk.red('✋')} ${chalk.red.bold(errorMessage)}`)
+        toolbox.print.log(`    ${chalk.red('✋')} ${chalk.red.bold(errorMessage)}`)
       }
       return isValid
     }

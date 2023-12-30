@@ -7,7 +7,7 @@ import mergeOptions from './mergeOptions.js'
 
 export default ({ payload, options = [], transformers = [], validators = [] }) => {
 
-  const generator = {
+  const toolbox = {
     payload,
     print: console,
     libraryOptions: options,
@@ -15,13 +15,13 @@ export default ({ payload, options = [], transformers = [], validators = [] }) =
     asks: { transformers, validators }
   }
 
-  generator.mergeOptions = (op) => mergeOptions({ handlerOptions: op, generator })
+  toolbox.mergeOptions = (op) => mergeOptions({ handlerOptions: op, toolbox })
 
-  generator.ui = ui({ generator })
-  generator.prompt = prompt({ generator })
-  generator.template = template({ generator })
-  generator.fs = fs({ generator })
-  generator.spawn = async (command, args, options) => {
+  toolbox.ui = ui({ toolbox })
+  toolbox.prompt = prompt({ toolbox })
+  toolbox.template = template({ toolbox })
+  toolbox.fs = fs({ toolbox })
+  toolbox.spawn = async (command, args, options) => {
     return new Promise(resolve => {
       const result = cp.spawn(command, args, options)
       result.on('close', () => {
@@ -30,5 +30,5 @@ export default ({ payload, options = [], transformers = [], validators = [] }) =
     })
   }
 
-  return generator
+  return toolbox
 }
