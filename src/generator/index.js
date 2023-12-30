@@ -5,13 +5,14 @@ import cp from 'child_process'
 import ui from './ui.js'
 import mergeOptions from './mergeOptions.js'
 
-export default ({ payload, options = [] }) => {
+export default ({ payload, options = [], transformers = [], validators = [] }) => {
 
   const generator = {
     payload,
     print: console,
     libraryOptions: options,
-    options: []
+    options: [],
+    asks: { transformers, validators }
   }
 
   generator.mergeOptions = (op) => mergeOptions({ handlerOptions: op, generator })

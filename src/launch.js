@@ -16,10 +16,12 @@ import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import fs from 'fs';
 import registerCommands from './commands/index.js';
+import loadTransformers from './load/transformers/index.js';
 import _path from 'path';
 import getFileCallerURL from './lib/getFileCallerURL.js';
-import loadOptions from './loadOptions/index.js';
-
+import loadOptions from './load/options/index.js';
+import loadValidators from './load/validators/index.js';
+import defaultValidatorsLibrary from './validators/index.js';
 import buildGenerator from './generator/index.js';
 
 
@@ -75,9 +77,28 @@ export default async ({ path, npmPackage, config } = {}) => {
     .hide('version')
     .epilog('Made by Servable.')
 
-  const options = await loadOptions({ path: __actualPath, config: __actualConfig })
+  const options = await loadOptions({
+    path: __actualPath,
+    config: __actualConfig
+  })
+
+  const transformers = await loadTransformers({
+    path: __actualPath,
+    config: __actualConfig,
+    options,
+
+  })
+
+  const validators = [(await loadValidators({
+    path: __actualPath,
+    config: __actualConfig,
+    options,
+  })),
+    defaultValidatorsLibrary]
+
   const payload = {}
-  const generator = buildGenerator({ payload, options, yargs })
+  const generator = buildGenerator({ payload, options, yargs, transformers, validators })
+
   await registerCommands({
     path: __actualPath,
     yargs,
@@ -86,7 +107,4 @@ export default async ({ path, npmPackage, config } = {}) => {
     generator,
     payload
   })
-
 }
-
-

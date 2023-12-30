@@ -1,4 +1,4 @@
-import getValidators from './validators/index.js'
+
 import Bluebird from "bluebird"
 import chalk from "chalk"
 
@@ -8,13 +8,14 @@ export default async (props) => {
     question,
     generator,
     promptModule,
+    validators = [],
     promptType } = props
 
   let {
     name,
     message,
     defaultValue,
-    validators = [{ type: 'nonEmpty' }] } = question
+  } = question
 
   if (!name) {
     return
@@ -50,27 +51,37 @@ export default async (props) => {
     default: value ? value : defaultValue,
     validate: async input => {
       let isValid = true
+      let errorMessage = null
       await Bluebird.Promise.mapSeries(
         validators,
         async validator => {
 
-          const validate = getValidators(validator)
-          if (validate) {
-            const _i = await validate({ input, ...validator })
-            if (!_i) {
+
+          if (validator.runner) {
+            const _i = await validator.runner({ input, ...validator })
+            if (_i && !_i.isValid) {
               isValid = false
+              errorMessage = _i.message ? _i.message : validator.errorMessage
+              errorMessage = errorMessage ? errorMessage : "Validation failed"
             }
             return
           }
 
-          if (validate.regex) {
-            const f = new RegExp(validate.regex, 'g')
+          if (validator.regex) {
+            const f = new RegExp(validator.regex, 'g')
             // isValid = validator.regex.test(input)
             isValid = f.test(input)
+            if (!isValid) {
+              errorMessage = validator.errorMessage ? validator.errorMessage : "Does not match regex"
+            }
           }
         })
       if (props.question.validate) {
         isValid = props.question.validate(input)
+        errorMessage = "Validation failed"
+      }
+      if (!isValid) {
+        generator.print.log(`    ${chalk.red('✋')} ${chalk.red.bold(errorMessage)}`)
       }
       return isValid
     }
