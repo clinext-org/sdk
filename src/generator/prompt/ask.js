@@ -18,7 +18,7 @@ export default async (props) => {
   } = question
 
   if (!name) {
-    return
+    return null
   }
 
   let value = payload[name]
@@ -28,22 +28,22 @@ export default async (props) => {
   const valueIsDefined = !(value === null || value === undefined)
   if (valueIsDefined) {
     generator.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(value)}`)
-    return
+    return value
   }
 
   const isQuick = payload['quick'] || payload['q']
   if (isQuick && valueIsDefined) {
     generator.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(value)}`)
-    return
+    return value
   }
 
   if (isQuick && !(defaultValue === null || defaultValue === undefined)) {
     payload[name] = defaultValue
     generator.print.log(`${chalk.green('✓')} ${chalk.bold(message ? message : name)} ${chalk.italic(payload[name])}`)
-    return
+    return defaultValue
   }
 
-  payload[name] = (await promptModule.prompt({
+  const result = (await promptModule.prompt({
     ...props.question,
     type: promptType,
     name,
@@ -87,5 +87,5 @@ export default async (props) => {
     }
   }))[name]
 
-  return payload[name]
+  return result
 }

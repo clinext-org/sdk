@@ -5,6 +5,9 @@ import _promptModule from './promptModule.js'
 import inquirerPromptAutocomplete from 'inquirer-autocomplete-prompt'
 import inquirerFileTreeSelection from 'inquirer-file-tree-selection-prompt'
 import inquirerParseJsonFile from 'inquirer-parse-json-file'
+import ejs from 'ejs'
+import chalk from 'chalk'
+
 
 export default ({ generator }) => {
 
@@ -34,33 +37,25 @@ export default ({ generator }) => {
             promptModule = _promptModule(_f)
           }
 
-          if (fullQuestion.prompt && fullQuestion.prompt.transformers && fullQuestion.prompt.transformers.length) {
-            let asksTransformers = generator.asks.transformers
-            asksTransformers = asksTransformers.filter(a => {
-              const mId = a.index.id
-              let contains = false
-              for (let i in fullQuestion.prompt.transformers) {
-                if (fullQuestion.prompt.transformers[i].id === mId) {
-                  contains = true
-                  break
+          if (fullQuestion.prompt
+            && fullQuestion.prompt.transformers
+            && fullQuestion.prompt.transformers.in
+            && fullQuestion.prompt.transformers.in.length) {
+            await Bluebird.Promise.mapSeries(
+              fullQuestion.prompt.transformers.in,
+              async transformerRaw => {
+                const transformer = generator.asks.transformers.in[transformerRaw.id]
+                if (!transformer) {
+                  return
                 }
-              }
-              return contains
-            })
-
-            if (asksTransformers && asksTransformers.length) {
-              await Bluebird.Promise.mapSeries(
-                asksTransformers,
-                async askTransformer => {
-                  fullQuestion = await askTransformer.run({
-                    question: fullQuestion,
-                    payload: generator.payload,
-                    generator,
-                    promptModule,
-                    promptType
-                  })
+                fullQuestion = await transformer.handler({
+                  question: fullQuestion,
+                  payload: generator.payload,
+                  generator,
+                  promptModule,
+                  promptType
                 })
-            }
+              })
           }
 
           let validators = []
@@ -88,7 +83,7 @@ export default ({ generator }) => {
             }
           }
 
-          const v = await ask({
+          fullQuestion.value = await ask({
             question: fullQuestion,
             payload: generator.payload,
             generator,
@@ -96,8 +91,46 @@ export default ({ generator }) => {
             promptType, validators
           })
 
-          result[question.name] = v
-          return v
+          let modified
+          if (fullQuestion.prompt
+            && fullQuestion.prompt.transformers
+            && fullQuestion.prompt.transformers.out
+            && fullQuestion.prompt.transformers.out.length) {
+            await Bluebird.Promise.mapSeries(
+              fullQuestion.prompt.transformers.out,
+              async transformerRaw => {
+                const { template } = transformerRaw
+                if (template) {
+                  fullQuestion.value = ejs.render(template, {
+                    ...generator.payload,
+                    value: fullQuestion.value,
+                  })
+                  modified = true
+                  return
+                }
+
+                const transformer = generator.asks.transformers.out[transformerRaw.id]
+                if (!transformer) {
+                  return
+                }
+                fullQuestion.value = await transformer.handler({
+                  value: fullQuestion.value,
+                  question: fullQuestion,
+                  payload: generator.payload,
+                  generator,
+                  promptModule,
+                  promptType
+                })
+                modified = true
+              })
+          }
+
+          if (modified) {
+            generator.print.log(`${chalk.green('✓')} ${chalk.italic.bold(fullQuestion.message ? fullQuestion.message : fullQuestion.name)} ${chalk.italic(fullQuestion.value)}`)
+          }
+          generator.payload[fullQuestion.name] = fullQuestion.value
+          result[fullQuestion.name] = fullQuestion.value
+          return fullQuestion.value
         })
       return result
     },

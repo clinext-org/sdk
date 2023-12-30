@@ -1,4 +1,4 @@
-import nonEmpty from "./nonEmpty.js"
+import nonEmpty from "./nonempty.js"
 
 export default async a => {
   switch (a.id.toLowerCase()) {

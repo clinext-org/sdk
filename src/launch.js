@@ -82,12 +82,14 @@ export default async ({ path, npmPackage, config } = {}) => {
     config: __actualConfig
   })
 
-  const transformers = await loadTransformers({
-    path: __actualPath,
-    config: __actualConfig,
-    options,
-
-  })
+  const transformers = {
+    in: await loadTransformers({
+      path: `${__actualPath}/questions/transformers/in`,
+    }),
+    out: await loadTransformers({
+      path: `${__actualPath}/questions/transformers/out`,
+    }),
+  }
 
   const validators = [(await loadValidators({
     path: __actualPath,
