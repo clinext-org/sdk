@@ -8,13 +8,14 @@ export default async (props) => {
     question,
     generator,
     promptModule,
-    validators = [],
+    validatorsRunners = [],
     promptType } = props
 
   let {
     name,
     message,
     defaultValue,
+    validators
   } = question
 
   if (!name) {
@@ -55,10 +56,10 @@ export default async (props) => {
       await Bluebird.Promise.mapSeries(
         validators,
         async validator => {
-
-
-          if (validator.runner) {
-            const _i = await validator.runner({ input, ...validator })
+          if (validator.id
+            && validatorsRunners[validator.id.toLowerCase()]
+            && validatorsRunners[validator.id.toLowerCase()].handler) {
+            const _i = await validatorsRunners[validator.id.toLowerCase()].handler({ input, ...validator })
             if (_i && !_i.isValid) {
               isValid = false
               errorMessage = _i.message ? _i.message : validator.errorMessage

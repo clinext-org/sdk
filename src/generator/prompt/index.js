@@ -58,37 +58,38 @@ export default ({ generator }) => {
               })
           }
 
-          let validators = []
-          let validatorsPayloads = fullQuestion.validators
-          if (validatorsPayloads && validatorsPayloads.length) {
-            const libraries = generator.asks.validators
+          // let validators = []
+          // let validatorsPayloads = fullQuestion.validators
+          // if (validatorsPayloads && validatorsPayloads.length) {
+          //   const libraries = generator.asks.validators
 
-            for (var i in validatorsPayloads) {
-              const payload = validatorsPayloads[i]
-              if (payload.regex) {
-                validators.push(payload)
-                continue
-              }
-              for (var i in libraries) {
-                const runner = await libraries[i](payload)
-                if (!runner) {
-                  continue
-                }
-                validators.push({
-                  ...payload,
-                  runner
-                })
-                break
-              }
-            }
-          }
+          //   for (var i in validatorsPayloads) {
+          //     const payload = validatorsPayloads[i]
+          //     if (payload.regex) {
+          //       validators.push(payload)
+          //       continue
+          //     }
+          //     for (var i in libraries) {
+          //       const runner = await libraries[i](payload)
+          //       if (!runner) {
+          //         continue
+          //       }
+          //       validators.push({
+          //         ...payload,
+          //         runner
+          //       })
+          //       break
+          //     }
+          //   }
+          // }
 
           fullQuestion.value = await ask({
             question: fullQuestion,
             payload: generator.payload,
             generator,
             promptModule,
-            promptType, validators
+            promptType,
+            validatorsRunners: generator.asks.validators
           })
 
           let modified

@@ -1,7 +1,17 @@
+import directoryFilesRecursive from '../../lib/directoryFilesRecursive.js'
 
 export default async ({ path, }) => {
-
-  const indexPath = `${path}/questions/validators/index.js`
-  const run = (await import(`${indexPath}`)).default
-  return run
+  let files = await directoryFilesRecursive({
+    path,
+    includeMeta: false
+  })
+  files = files ? files.map(f => f.default) : []
+  const result = {}
+  files.forEach(file => {
+    if (!file.id) {
+      return
+    }
+    result[file.id.toLowerCase()] = file
+  })
+  return result
 }

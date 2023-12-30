@@ -18,11 +18,14 @@ import fs from 'fs';
 import registerCommands from './commands/index.js';
 import loadTransformers from './load/transformers/index.js';
 import _path from 'path';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import getFileCallerURL from './lib/getFileCallerURL.js';
 import loadOptions from './load/options/index.js';
 import loadValidators from './load/validators/index.js';
-import defaultValidatorsLibrary from './validators/index.js';
 import buildGenerator from './generator/index.js';
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 
 export default async ({ path, npmPackage, config } = {}) => {
@@ -91,15 +94,28 @@ export default async ({ path, npmPackage, config } = {}) => {
     }),
   }
 
-  const validators = [(await loadValidators({
-    path: __actualPath,
+  let validators = await loadValidators({
+    path: _path.resolve(__dirname, "./validators"),
     config: __actualConfig,
     options,
-  })),
-    defaultValidatorsLibrary]
+  })
+  validators = {
+    ...validators,
+    ...(await loadValidators({
+      path: `${__actualPath}/questions/validators`,
+      config: __actualConfig,
+      options,
+    }))
+  }
 
   const payload = {}
-  const generator = buildGenerator({ payload, options, yargs, transformers, validators })
+  const generator = buildGenerator({
+    payload,
+    options,
+    yargs,
+    transformers,
+    validators
+  })
 
   await registerCommands({
     path: __actualPath,
