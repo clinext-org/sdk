@@ -35,10 +35,11 @@ export default ({ toolbox }) => {
           entries,
           async entry => {
             // await Promise.all(entries.map(async entry => {
-            const _destination = _isGlob
+            let _destination = _isGlob
               ? entry.replace(rootSource, destination)
               : destination
 
+            _destination = _destination.replace("{.}", ".")
             await ensureDirectoryExists(_destination)
             const copyFile = async () => {
               try {
