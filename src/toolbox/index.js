@@ -15,6 +15,7 @@ export default ({ payload, options = [], transformers = [], validators = [] }) =
     asks: { transformers, validators }
   }
 
+
   toolbox.mergeOptions = (op) => mergeOptions({ handlerOptions: op, toolbox })
 
   toolbox.ui = ui({ toolbox })

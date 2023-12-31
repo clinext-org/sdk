@@ -11,7 +11,7 @@ chmod +x ./dist/app.cjs
 yarn link
 servable
 */
-
+import * as dotenv from 'dotenv';
 import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import fs from 'fs';
@@ -24,6 +24,7 @@ import getFileCallerURL from './lib/getFileCallerURL.js';
 import loadOptions from './load/options/index.js';
 import loadValidators from './load/validators/index.js';
 import buildToolbox from './toolbox/index.js';
+dotenv.config()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -125,4 +126,21 @@ export default async ({ path, npmPackage, config } = {}) => {
     toolbox,
     payload
   })
+
+  const loadEnv = async ({ env, projectSrcPath }) => {
+    const f = env === 'development' ? '../.env.development' : '../.env'
+    const __d = _path.resolve(projectSrcPath, f)
+    let content = null
+    if (fs.existsSync(__d)) {
+      content = (await fs.promises.readFile(__d)).toString()
+    }
+    const parsed = dotenv.parse(content)
+
+    return parsed
+  }
+
+  const env = process.env.NODE_ENV || 'production'
+  console.log('procee', env)
+  const localEnv = await loadEnv({ env, projectSrcPath: __actualPath })
+  toolbox.env = localEnv
 }

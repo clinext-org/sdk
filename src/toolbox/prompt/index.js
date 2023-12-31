@@ -133,6 +133,7 @@ export default ({ toolbox }) => {
                   return
                 }
                 fullQuestion = await transformer.handler({
+                  item: transformerRaw,
                   question: fullQuestion,
                   payload: toolbox.payload,
                   toolbox,
