@@ -62,6 +62,32 @@ export default ({ toolbox }) => {
             // }))
           })
       },
+      writeText: async ({
+        text,
+        destination,
+        data,
+        options = { mark: true },
+      }) => {
+
+        await ensureDirectoryExists(destination)
+        const copyFile = async () => {
+          try {
+            return fs.promises.writeFile(destination, text)
+          } catch (e) {
+            console.error(e)
+          }
+        }
+        if (!data) {
+          return copyFile()
+        }
+
+        try {
+          const result = ejs.render(text, data)
+          return fs.promises.writeFile(destination, result)
+        } catch (e) {
+          return copyFile()
+        }
+      },
     },
     copy: async ({ source, destination, useRelativeCall = false }) => {
       return fs.promises.cp(source, destination)
