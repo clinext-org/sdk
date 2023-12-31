@@ -9,6 +9,85 @@ import ejs from 'ejs'
 import chalk from 'chalk'
 
 
+const conditionIsMet = ({ conditions, payload }) => {
+  if (!conditions || !conditions.length) {
+    return true
+  }
+
+  let meetsConditions = true
+  for (var i in conditions) {
+    const condition = conditions[i]
+    const { name, operator, operand } = condition
+    const targetValue = payload[name]
+    if (!operator && !targetValue) {
+      meetsConditions = false
+      break
+    }
+
+    switch (operator) {
+      case '=': {
+        meetsConditions = targetValue === operand
+        if (!meetsConditions) {
+          break
+        }
+      }
+      default:
+        break
+    }
+  }
+
+  return meetsConditions
+}
+
+const handleSideEffects = async ({ toolbox, questions, question, position = 'after' }) => {
+
+  if (!question.sideEffects || !question.sideEffects.length) {
+    return
+  }
+
+  await Promise.all(question.sideEffects.map(async sideEffect => {
+    const { type, name, template, conditions, id, position: _position = 'after' } = sideEffect
+    if (_position !== position) {
+      return
+    }
+    const meetsConditions = conditionIsMet({ conditions, payload: toolbox.payload })
+
+    if (!meetsConditions) {
+      return null
+    }
+
+    switch (type) {
+      case 'payload':
+        break
+      default:
+        return
+    }
+
+    if (template !== null && template !== undefined) {
+      toolbox.payload[name] = ejs.render(template, toolbox.payload)
+      let _question = null
+      let _i = -1
+      for (var i in questions) {
+        if (questions[i].name === name) {
+          _question = questions[i]
+          _i = i
+          break
+        }
+      }
+
+      if (_question) {
+        _question.value = toolbox.payload[name]
+        questions[_i] = _question
+        toolbox.print.log(`${chalk.green(`✓ (SE) ${position}`)} ${chalk.italic.bold(_question.message ? _question.message : _question.name)} ${chalk.italic(_question.value)}`)
+      } else {
+        toolbox.print.log(`${chalk.green(`✓ (SE) ${position}`)} ${chalk.italic.bold(name)} ${chalk.italic(toolbox.payload[name])}`)
+      }
+
+      return
+    }
+  }))
+}
+
 export default ({ toolbox }) => {
 
   const prompt = {
@@ -22,21 +101,9 @@ export default ({ toolbox }) => {
             ...question
           }
 
-          if (fullQuestion.conditions && fullQuestion.conditions.length) {
-            let meetsConditions = true
-            for (var i in fullQuestion.conditions) {
-              const condition = fullQuestion.conditions[i]
-              const { name, operator, operand } = condition
-              const targetValue = toolbox.payload[name]
-              // if (!operator && (targetValue === null || targetValue === undefined || !targetValue)) {
-              if (!operator && !targetValue) {
-                meetsConditions = false
-                break
-              }
-            }
-            if (!meetsConditions) {
-              return null
-            }
+          const meetsConditions = conditionIsMet({ conditions: fullQuestion.conditions, payload: toolbox.payload })
+          if (!meetsConditions) {
+            return null
           }
 
           const items = toolbox.options.filter(a => a.name === question.name)
@@ -75,30 +142,7 @@ export default ({ toolbox }) => {
               })
           }
 
-          // let validators = []
-          // let validatorsPayloads = fullQuestion.validators
-          // if (validatorsPayloads && validatorsPayloads.length) {
-          //   const libraries = toolbox.asks.validators
-
-          //   for (var i in validatorsPayloads) {
-          //     const payload = validatorsPayloads[i]
-          //     if (payload.regex) {
-          //       validators.push(payload)
-          //       continue
-          //     }
-          //     for (var i in libraries) {
-          //       const runner = await libraries[i](payload)
-          //       if (!runner) {
-          //         continue
-          //       }
-          //       validators.push({
-          //         ...payload,
-          //         runner
-          //       })
-          //       break
-          //     }
-          //   }
-          // }
+          await handleSideEffects({ questions, question: fullQuestion, toolbox, position: 'before' })
 
           fullQuestion.value = await ask({
             question: fullQuestion,
@@ -147,6 +191,9 @@ export default ({ toolbox }) => {
           }
           toolbox.payload[fullQuestion.name] = fullQuestion.value
           result[fullQuestion.name] = fullQuestion.value
+
+          await handleSideEffects({ questions, question: fullQuestion, toolbox, position: 'after' })
+
           return fullQuestion.value
         })
       return result
