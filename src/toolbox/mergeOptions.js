@@ -2,7 +2,7 @@
 import _ from 'underscore'
 import lodash from 'lodash'
 
-export default ({ handlerOptions = [], toolbox }) => {
+export default async ({ handlerOptions = [], toolbox }) => {
 
   toolbox.options = handlerOptions.map(option => {
     switch (option.scope) {
@@ -26,4 +26,12 @@ export default ({ handlerOptions = [], toolbox }) => {
     )
     return result
   })
+
+  await Promise.all(toolbox.options.filter(a => a.loadFromStoreOnInit).map(async option => {
+    let storedValue = await toolbox.store.get({
+      key: option.name,
+      domain: 'domain'
+    })
+    toolbox.payload[option.name] = storedValue
+  }))
 }

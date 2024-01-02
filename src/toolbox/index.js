@@ -4,6 +4,7 @@ import fs from './fs.js'
 import cp from 'child_process'
 import ui from './ui.js'
 import mergeOptions from './mergeOptions.js'
+import store from './store/index.js'
 
 export default ({ payload, options = [], transformers = [], validators = [] }) => {
 
@@ -15,12 +16,13 @@ export default ({ payload, options = [], transformers = [], validators = [] }) =
     asks: { transformers, validators }
   }
 
-  toolbox.mergeOptions = (op) => mergeOptions({ handlerOptions: op, toolbox })
+  toolbox.mergeOptions = async (op) => mergeOptions({ handlerOptions: op, toolbox })
 
   toolbox.ui = ui({ toolbox })
   toolbox.prompt = prompt({ toolbox })
   toolbox.template = template({ toolbox })
   toolbox.fs = fs({ toolbox })
+  toolbox.store = store({ toolbox })
   toolbox.spawn = async (command, args, options) => {
     return new Promise(resolve => {
       const result = cp.spawn(command, args, options)

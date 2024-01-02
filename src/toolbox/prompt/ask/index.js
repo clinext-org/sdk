@@ -6,12 +6,14 @@ import ejs from 'ejs'
 import chalk from 'chalk'
 import conditionIsMet from './conditionIsMet.js'
 import handleSideEffects from './handleSideEffects.js'
+import valueExists from './valueExists.js'
 
 
 export default async ({ toolbox, value }) => {
 
   const questions = Array.isArray(value) ? value : [value]
   const result = {}
+
   await Bluebird.Promise.mapSeries(
     questions,
     async question => {
@@ -31,13 +33,19 @@ export default async ({ toolbox, value }) => {
           ...fullQuestion
         }
       }
-      const { type: promptType = 'input',
-        module: _f
-      } = fullQuestion.prompt ? fullQuestion.prompt : {}
+      const {
+        promptType = 'input',
+        promptModule = _promptModule(),
+        storeDomain = "domain",
+        loadFromStoreOnInit = true,
+        loadFromStore = true,
+        storeValue = false,
+        storeSecurely = false,
+        useStoreValueAsDefault = true
+      } = fullQuestion
 
-      let promptModule = _f ? _f : _promptModule()
       if (typeof promptModule === 'string') {
-        promptModule = _promptModule(_f)
+        promptModule = _promptModule(fullQuestion.promptModule)
       }
 
       if (fullQuestion.transformers
@@ -63,14 +71,38 @@ export default async ({ toolbox, value }) => {
 
       await handleSideEffects({ questions, question: fullQuestion, toolbox, position: 'before' })
 
-      fullQuestion.value = await doAsk({
-        question: fullQuestion,
-        payload: toolbox.payload,
-        toolbox,
-        promptModule,
-        promptType,
-        validatorsRunners: toolbox.asks.validators
-      })
+      const _doAsk = async () => {
+        fullQuestion.value = await doAsk({
+          question: fullQuestion,
+          payload: toolbox.payload,
+          toolbox,
+          promptModule,
+          promptType,
+          validatorsRunners: toolbox.asks.validators
+        })
+      }
+
+
+      if (!valueExists(fullQuestion.value) && loadFromStore) {
+        let storedValue = await toolbox.store.get({
+          key: fullQuestion.name,
+          domain: storeDomain
+        })
+        if (valueExists(storedValue)) {
+          if (useStoreValueAsDefault) {
+            fullQuestion.defaultValue = storedValue
+            await _doAsk()
+          } else {
+            fullQuestion.value = storedValue
+            toolbox.print.log(`${chalk.green(`✓ (stored value)`)} ${chalk.italic.bold(fullQuestion.message)} ${chalk.italic(fullQuestion.value)}`)
+          }
+        }
+        else {
+          await _doAsk()
+        }
+      } else {
+        await _doAsk()
+      }
 
       let modified
       if (fullQuestion.transformers
@@ -113,6 +145,14 @@ export default async ({ toolbox, value }) => {
 
       await handleSideEffects({ questions, question: fullQuestion, toolbox, position: 'after' })
 
+      if (storeValue) {
+        await toolbox.store.save({
+          key: fullQuestion.name,
+          domain: storeDomain,
+          value: fullQuestion.value,
+          secure: storeSecurely
+        })
+      }
       return fullQuestion.value
     })
   return result

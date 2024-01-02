@@ -38,8 +38,8 @@ const operation = async ({ path, toolbox, yargs, root = false, payload }) => {
       return
     }
 
-    command.builder = yargs => {
-      fixOptions({ toolbox, commandOptions: commandData.options, yargs })
+    command.builder = async yargs => {
+      await fixOptions({ toolbox, commandOptions: commandData.options, yargs })
       if (commandData.example) {
         yargs.example(commandData.example)
       }
@@ -64,8 +64,8 @@ const operation = async ({ path, toolbox, yargs, root = false, payload }) => {
     const { data: commandData, command } = await buildCommand({ path: __path, toolbox, fileName: item, payload })
 
     if (!root) {
-      command.builder = yargs => {
-        fixOptions({ toolbox, commandOptions: commandData.options, yargs })
+      command.builder = async yargs => {
+        await fixOptions({ toolbox, commandOptions: commandData.options, yargs })
         // commandData.options.forEach(option => formatOptionForYargs({ option, yargs }))
         if (commandData.example) {
           yargs.example(commandData.example)
@@ -96,7 +96,7 @@ export default operation
 
 
 import parseArgv from 'tiny-parse-argv'
-const fixOptions = ({ toolbox, commandOptions, yargs }) => {
+const fixOptions = async ({ toolbox, commandOptions, yargs }) => {
   let nativeArgv = parseArgv(process.argv)
   delete nativeArgv["--"]
   delete nativeArgv["_"]
@@ -114,6 +114,6 @@ const fixOptions = ({ toolbox, commandOptions, yargs }) => {
       value
     }
   })
-  toolbox.mergeOptions(options)
+  await toolbox.mergeOptions(options)
   toolbox.options.forEach(option => formatOptionForYargs({ option, yargs }))
 }
