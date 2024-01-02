@@ -15,7 +15,7 @@ export default async (props) => {
     name,
     message,
     defaultValue,
-    validators
+    validators = []
   } = question
 
   if (!name) {

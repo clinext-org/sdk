@@ -25,6 +25,7 @@ import loadOptions from './load/options/index.js';
 import loadValidators from './load/validators/index.js';
 import buildToolbox from './toolbox/index.js';
 import loadEnv from './load/env.js';
+import loadExtensions from './load/extensions/index.js';
 dotenv.config()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -118,6 +119,14 @@ export default async ({ path, npmPackage, config } = {}) => {
     validators
   })
 
+  await loadEnv({
+    projectSrcPath: __actualPath,
+    toolbox
+  })
+  await loadExtensions({
+    path: `${__actualPath}/extensions`, toolbox
+  })
+
   await registerCommands({
     path: __actualPath,
     yargs,
@@ -127,6 +136,5 @@ export default async ({ path, npmPackage, config } = {}) => {
     payload
   })
 
-  await loadEnv({ projectSrcPath: __actualPath, toolbox })
 
 }
