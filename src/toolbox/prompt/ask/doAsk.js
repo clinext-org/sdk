@@ -15,7 +15,8 @@ export default async (props) => {
     name,
     message,
     defaultValue,
-    validators = []
+    validators = [],
+    hideValidationErrorMessage = false
   } = question
 
   if (!name) {
@@ -81,7 +82,7 @@ export default async (props) => {
         isValid = props.question.validate(input)
         errorMessage = "Validation failed"
       }
-      if (!isValid) {
+      if (!isValid && !hideValidationErrorMessage) {
         toolbox.print.log(`    ${chalk.red('✋')} ${chalk.red.bold(errorMessage)}`)
       }
       return isValid
