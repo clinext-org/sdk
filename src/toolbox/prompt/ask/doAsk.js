@@ -8,6 +8,7 @@ export default async (props) => {
     question,
     toolbox,
     promptModule,
+    displayTransformersRunners = {},
     validatorsRunners = [],
     promptType } = props
 
@@ -16,6 +17,7 @@ export default async (props) => {
     message,
     defaultValue,
     validators = [],
+    // transformers = { display: displayTransformers = [] },
     hideValidationErrorMessage = false
   } = question
 
@@ -86,6 +88,31 @@ export default async (props) => {
         toolbox.print.log(`    ${chalk.red('✋')} ${chalk.red.bold(errorMessage)}`)
       }
       return isValid
+    },
+    transformer: input => {
+      let result = input
+      if (props.question.transformer) {
+        result = props.question.transformer(result)
+      }
+      else if (question.transformers && question.transformers.display && question.transformers.display.length) {
+        question.transformers.display.forEach(transformer => {
+          if (transformer.id
+            && displayTransformersRunners[transformer.id]
+            && displayTransformersRunners[transformer.id].handler) {
+            result = displayTransformersRunners[transformer.id].handler({ input: result, toolbox, })
+          }
+
+          else if (transformer.template) {
+            result = ejs.render(transformer.template, {
+              ...toolbox.payload,
+            })
+          }
+          else if (transformer.handler) {
+            result = transformer.handler({ input: result, toolbox })
+          }
+        })
+      }
+      return result
     }
   }))[name]
 

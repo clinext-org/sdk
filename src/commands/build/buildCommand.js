@@ -16,7 +16,11 @@ export default async ({
     desc: description,
     builder: {},
     handler: (argv,) => {
-      data.handler({ toolbox, payload, argv })
+      toolbox.ui.drawSectionHeader({
+        type: 'h1',
+        title: description ? description : name,
+      })
+      data.handler({ toolbox })
     }
   }
 

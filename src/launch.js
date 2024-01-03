@@ -94,6 +94,9 @@ export default async ({ path, npmPackage, config } = {}) => {
     out: await loadTransformers({
       path: `${__actualPath}/transformers/out`,
     }),
+    display: await loadTransformers({
+      path: `${__actualPath}/transformers/display`,
+    }),
   }
 
   let validators = await loadValidators({

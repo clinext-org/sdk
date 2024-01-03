@@ -20,11 +20,11 @@ export default async ({ handlerOptions = [], toolbox }) => {
     }
 
     let result = { ...option }
-    lodash.merge(
-      result,
+    const a = lodash.merge(
       i,
+      result,
     )
-    return result
+    return a
   })
 
   await Promise.all(toolbox.options.filter(a => a.loadFromStoreOnInit).map(async option => {

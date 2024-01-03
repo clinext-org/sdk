@@ -78,7 +78,8 @@ export default async ({ toolbox, value }) => {
           toolbox,
           promptModule,
           promptType,
-          validatorsRunners: toolbox.asks.validators
+          validatorsRunners: toolbox.asks.validators,
+          displayTransformersRunners: toolbox.asks.transformers.display,
         })
       }
 
