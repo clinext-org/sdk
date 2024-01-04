@@ -122,6 +122,7 @@ export default async ({ path, npmPackage, config } = {}) => {
     validators
   })
 
+
   await loadEnv({
     projectSrcPath: __actualPath,
     toolbox
@@ -129,6 +130,8 @@ export default async ({ path, npmPackage, config } = {}) => {
   await loadExtensions({
     path: `${__actualPath}/extensions`, toolbox
   })
+
+  global.clinextbox = toolbox
 
   await registerCommands({
     path: __actualPath,
