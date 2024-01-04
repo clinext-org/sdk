@@ -7,18 +7,19 @@ import Bluebird from "bluebird"
 import ensureDirectoryExists from '../lib/ensureDirectoryExists.js'
 
 export default ({ toolbox }) => {
-  return {
+  const result = {
     writeText: async ({
       text,
       destination,
       data,
-      render = true
+      render = true,
+      format = 'utf8'
     }) => {
 
       await ensureDirectoryExists(destination)
       const copyFile = async () => {
         try {
-          return fs.promises.writeFile(destination, text)
+          return fs.promises.writeFile(destination, text, format)
         } catch (e) {
           console.error(e)
         }
@@ -31,7 +32,7 @@ export default ({ toolbox }) => {
       if (render) {
         try {
           const result = ejs.render(text, data)
-          return fs.promises.writeFile(destination, result)
+          return fs.promises.writeFile(destination, result, format)
         } catch (e) {
           return copyFile()
         }
@@ -100,5 +101,18 @@ export default ({ toolbox }) => {
         })
     }
   }
+
+  result.writeJSON = async (props) => {
+    const {
+      text,
+    } = props
+    return result.writeText({
+      ...props,
+      format: 'utf8',
+      text: JSON.stringify(text, null, 2)
+    })
+  }
+
+  return result
 }
 
