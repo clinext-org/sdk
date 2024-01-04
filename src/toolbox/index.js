@@ -26,8 +26,15 @@ export default ({ payload, options = [], transformers = [], validators = [] }) =
   toolbox.spawn = async (command, args, options) => {
     return new Promise(resolve => {
       const result = cp.spawn(command, args, options)
+      result.stdout.setEncoding('utf8')
       result.on('close', () => {
         resolve()
+      })
+      result.stdout.on('data', data => {
+        console.log(data)
+      })
+      result.stderr.on('data', data => {
+        console.info('stderr: ' + data)
       })
     })
   }
