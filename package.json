@@ -27,7 +27,7 @@
   "files": [
     "dist",
     "src",
-    "engine"
+    ".env"
   ],
   "engines": {
     "node": ">=10"
