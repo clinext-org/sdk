@@ -1,6 +1,8 @@
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import _path from 'path';
+import checkFileExists from '../lib/checkFileExists.js';
+
 dotenv.config()
 
 export default async (props) => {
@@ -16,13 +18,23 @@ export default async (props) => {
 }
 
 const loadEnv = async ({ env, projectSrcPath }) => {
-  const f = env === 'development' ? '../.env.development' : '../.env'
-  const __d = _path.resolve(projectSrcPath, f)
-  let content = null
-  if (fs.existsSync(__d)) {
-    content = (await fs.promises.readFile(__d)).toString()
+  const envFilePathRelative = env === 'development' ? '../.env.development' : '../.env'
+
+  const envFilePath = _path.resolve(projectSrcPath, envFilePathRelative)
+  console.log('loadEnv', env, projectSrcPath, envFilePath, envFilePathRelative)
+  if (!(await checkFileExists(envFilePath))) {
+    console.log('loadEnv: file does not exist',)
+    return {}
   }
+
+  let content = (await fs.promises.readFile(envFilePath)).toString()
+  if (!content) {
+    console.log('loadEnv: no content',)
+    return {}
+  }
+
   const parsed = dotenv.parse(content)
+  console.log('loadEnv: content:', content, parsed)
 
   return parsed
 }

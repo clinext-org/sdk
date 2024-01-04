@@ -12,7 +12,7 @@ export default ({ toolbox }) => {
       text,
       destination,
       data,
-      options = { mark: true },
+      render = true
     }) => {
 
       await ensureDirectoryExists(destination)
@@ -22,17 +22,24 @@ export default ({ toolbox }) => {
         } catch (e) {
           console.error(e)
         }
+        return false
       }
       if (!data) {
         return copyFile()
       }
 
-      try {
-        const result = ejs.render(text, data)
-        return fs.promises.writeFile(destination, result)
-      } catch (e) {
+      if (render) {
+        try {
+          const result = ejs.render(text, data)
+          return fs.promises.writeFile(destination, result)
+        } catch (e) {
+          return copyFile()
+        }
+      }
+      else {
         return copyFile()
       }
+
     },
     copy: async ({ source, destination, }) => {
       return fs.promises.cp(source, destination)
@@ -46,13 +53,13 @@ export default ({ toolbox }) => {
       source,
       destination = toolbox.payload.destination,
       data = toolbox.payload,
-      options = { mark: true },
+      globOptions = { mark: true },
       render = true,
       rootSource
     }) => {
 
       const _isGlob = isGlob(source)
-      const entries = await fg([source], options,)
+      const entries = await fg([source], globOptions,)
 
       await Bluebird.Promise.mapSeries(
         entries,
