@@ -80,7 +80,9 @@ const operation = async ({ path, toolbox, yargs, root = false, payload }) => {
     }
     else {
       subCommands.forEach(subCommand => {
-        yargs.command(subCommand.index)
+        if (subCommand.index) {
+          yargs.command(subCommand.index)
+        }
       })
     }
 

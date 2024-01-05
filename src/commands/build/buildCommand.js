@@ -16,11 +16,15 @@ export default async ({
     desc: description,
     builder: {},
     handler: (argv,) => {
-      toolbox.ui.drawSectionHeader({
-        type: 'h1',
-        title: description ? description : name,
-      })
-      data.handler && data.handler({ toolbox })
+      if (!data.skipTitleDisplay) {
+        toolbox.ui.drawSectionHeader({
+          type: 'h1',
+          title: description ? description : name,
+        })
+      }
+      if (data.handler) {
+        data.handler({ toolbox })
+      }
     }
   }
 

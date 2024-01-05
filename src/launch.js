@@ -131,7 +131,7 @@ export default async ({ path, npmPackage, config } = {}) => {
     path: `${__actualPath}/extensions`, toolbox
   })
 
-  global.clinextbox = toolbox
+  global.Clinext = toolbox
 
   await registerCommands({
     path: __actualPath,
