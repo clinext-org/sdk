@@ -20,7 +20,7 @@ export default async ({
         type: 'h1',
         title: description ? description : name,
       })
-      data.handler({ toolbox })
+      data.handler && data.handler({ toolbox })
     }
   }
 
