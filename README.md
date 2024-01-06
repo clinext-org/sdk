@@ -1,4 +1,4 @@
-# Clinext
+# CliNext
 
 [![npm Package](https://img.shields.io/npm/v/servable-engine.svg?style=flat-square)](https://www.npmjs.org/package/servable-engine)
 [![NPM Downloads](https://img.shields.io/npm/dm/servable-engine.svg)](https://npmjs.org/package/servable-engine)
