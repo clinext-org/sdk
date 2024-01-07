@@ -25,6 +25,8 @@ const operation = async ({ path, toolbox, yargs, root = false, payload }) => {
     subCommands.push(subCommand)
   }))
 
+  // subCommands.sort((a, b) => a.index.position < b.index.position)
+
   await Promise.all(candidates.map(async item => {
     const __path = `${path}/${item}`
     const stat = await fs.promises.stat(__path)
@@ -46,9 +48,11 @@ const operation = async ({ path, toolbox, yargs, root = false, payload }) => {
     }
     if (commandData.usage) {
     }
+    command._raw = commandData
     commands.push(command)
-
   }))
+
+  // commands.sort((a, b) => a._raw.position < b._raw.position)
 
   await Promise.all(candidates.map(async item => {
     const __path = `${path}/${item}`

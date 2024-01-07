@@ -58,7 +58,11 @@ export default async (props) => {
       let errorMessage = null
       await Bluebird.Promise.mapSeries(
         validators,
-        async validator => {
+        async _validator => {
+          const validator = (typeof _validator === "string") ? {
+            id: _validator
+          } : _validator
+
           if (validator.id
             && validatorsRunners[validator.id.toLowerCase()]
             && validatorsRunners[validator.id.toLowerCase()].handler) {
@@ -78,6 +82,17 @@ export default async (props) => {
             if (!isValid) {
               errorMessage = validator.errorMessage ? validator.errorMessage : "Does not match regex"
             }
+            return
+          }
+
+          if (validator.handler) {
+            const _i = await validator.handler({ input, ...validator })
+            if (_i && !_i.isValid) {
+              isValid = false
+              errorMessage = _i.message ? _i.message : validator.errorMessage
+              errorMessage = errorMessage ? errorMessage : "Validation failed"
+            }
+            return
           }
         })
       if (props.question.validate) {
@@ -95,7 +110,11 @@ export default async (props) => {
         result = props.question.transformer(result)
       }
       else if (question.transformers && question.transformers.display && question.transformers.display.length) {
-        question.transformers.display.forEach(transformer => {
+        question.transformers.display.forEach(_transformer => {
+          const transformer = (typeof _transformer === "string") ? {
+            id: _transformer
+          } : _transformer
+
           if (transformer.id
             && displayTransformersRunners[transformer.id]
             && displayTransformersRunners[transformer.id].handler) {
