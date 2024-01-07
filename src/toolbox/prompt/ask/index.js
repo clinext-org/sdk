@@ -53,11 +53,21 @@ export default async ({ toolbox, value }) => {
         && fullQuestion.transformers.in.length) {
         await Bluebird.Promise.mapSeries(
           fullQuestion.transformers.in,
-          async transformerRaw => {
-            const transformer = toolbox.asks.transformers.in[transformerRaw.id]
-            if (!transformer) {
-              return
+          async _transformerRaw => {
+            const transformerRaw = (typeof _transformerRaw === "string") ? {
+              id: _transformerRaw
+            } : _transformerRaw
+
+
+            let handler = transformerRaw.handler
+            if (!handler) {
+              const transformer = toolbox.asks.transformers.in[transformerRaw.id]
+              if (!transformer) {
+                return
+              }
+              handler = transformer.handler
             }
+
             fullQuestion = await transformer.handler({
               item: transformerRaw,
               question: fullQuestion,
@@ -111,23 +121,32 @@ export default async ({ toolbox, value }) => {
         && fullQuestion.transformers.out.length) {
         await Bluebird.Promise.mapSeries(
           fullQuestion.transformers.out,
-          async transformerRaw => {
+          async _transformerRaw => {
+            const transformerRaw = (typeof _transformerRaw === "string") ? {
+              id: _transformerRaw
+            } : _transformerRaw
+
             const { template } = transformerRaw
             if (template) {
               fullQuestion.value = ejs.render(template, {
                 ...toolbox.payload,
-                value: fullQuestion.value,
+                input: fullQuestion.value,
               })
               modified = true
               return
             }
 
-            const transformer = toolbox.asks.transformers.out[transformerRaw.id]
-            if (!transformer) {
-              return
+            let handler = transformerRaw.handler
+            if (!handler) {
+              const transformer = toolbox.asks.transformers.out[transformerRaw.id]
+              if (!transformer) {
+                return
+              }
+              handler = transformer.handler
             }
-            fullQuestion.value = await transformer.handler({
-              value: fullQuestion.value,
+
+            fullQuestion.value = await handler({
+              input: fullQuestion.value,
               question: fullQuestion,
               payload: toolbox.payload,
               toolbox,
