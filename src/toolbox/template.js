@@ -2,7 +2,7 @@ import ejs from 'ejs'
 
 export default () => ({
   render: async ({ template, data = CliNext.payload }) => {
-    let content = template.replace(/\<{\{(.*?)\}\}>/g, function (match, token) {
+    let content = template.replace(/\<{\{(.*?)\}\}>/g, (match, token) => {
       let parts = token.split('|')
       parts = parts.map(i => {
         if (!i) {

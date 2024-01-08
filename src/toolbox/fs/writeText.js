@@ -10,18 +10,18 @@ export default async ({
 
   await ensureDirectoryExists(destination)
   if (!data || !render) {
-    return doCopyFile({ text, destination })
+    return doCopyFile({ text, destination, format })
   }
 
   try {
     const result = await CliNext.template.render({ template: text, data })
     return fs.promises.writeFile(destination, result, format)
   } catch (e) {
-    return doCopyFile({ entry, destination })
+    return doCopyFile({ text, destination, format })
   }
 }
 
-const doCopyFile = async ({ text, destination }) => {
+const doCopyFile = async ({ text, destination, format }) => {
   try {
     return fs.promises.writeFile(destination, text, format)
   } catch (e) {
